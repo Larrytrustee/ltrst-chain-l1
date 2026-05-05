@@ -1,18 +1,18 @@
-# LTRST Chain — The AI Blockchain for Legal & Medical Tools
+# LTRST Chain — The AI Blockchain for Legal, Financial, and Medical AI-Generated Projects and Tools
 
-LTRST Chain (`ltrst-chain-1`) is a sovereign Layer-1 blockchain purpose-built to host **AI-powered legal and medical tools** with cryptographic privacy guarantees at the protocol level. It is the source-of-truth ledger for the [LarryTrustee.AI](https://larrytrustee.ai) platform.
+LTRST Chain (`ltrst-chain-1`) is a sovereign Layer-1 blockchain purpose-built to host **legal, financial, and medical AI-generated projects and tools** with cryptographic privacy guarantees at the protocol level. It is the source-of-truth ledger for the [LarryTrustee.AI](https://larrytrustee.ai) platform.
 
 This repository contains the source code for the `ltrstchaind` validator binary.
 
 ## Why an AI-Specific Chain
 
-General-purpose chains were not designed with AI workloads in mind. LTRST Chain is. Its protocol-level privacy primitives — shielded commitments, nullifier sets, and a rolling Merkle accumulator — let an AI model process a user's legal trust, medical history, or estate documents without those payloads ever sitting on a server that can be subpoenaed, breached, or quietly mined.
+General-purpose chains were not designed with AI workloads in mind. LTRST Chain is. Its protocol-level privacy primitives — shielded commitments, nullifier sets, and a rolling Merkle accumulator — let an AI model process a user's legal trust, financial estate plan, or medical history without those payloads ever sitting on a server that can be subpoenaed, breached, or quietly mined.
 
-The chain is built so AI tools running on it can:
+The chain is built so AI-generated projects and tools running on it can serve three core categories:
 
-- **AI-powered legal tools** — generate, store, and execute living trusts, wills, beneficiary designations, and probate filings; AI-assisted contract drafting; document signing-likeness verification for deepfake-era authentication.
-- **AI-powered medical tools** — HIPAA-aligned medical-record commitments; AI-guided care directives; cryptographically-anchored patient consent for AI-driven diagnosis or treatment recommendation; family medical history that survives the patient.
-- **AI-powered legacy tools** — family legacy video commitments, grantor signing-likeness video, and any other primary-source data that must outlive its creator under cryptographic guarantees.
+- **Legal AI-generated projects and tools** — living trusts, wills, beneficiary designations, and probate filings; AI-assisted contract drafting; signing-likeness verification for deepfake-era authentication of executed documents.
+- **Financial AI-generated projects and tools** — on-chain estate-planning instruments; vesting and trust-account commitments; cryptographically-anchored beneficiary designations; family-legacy asset transfer; programmable financial directives that outlive their grantor.
+- **Medical AI-generated projects and tools** — HIPAA-aligned medical-record commitments; AI-guided care directives; cryptographically-anchored patient consent for AI-driven diagnosis or treatment recommendation; family medical history that survives the patient.
 
 Every category above is a real consumer product on the LarryTrustee.AI platform, all anchored to this chain.
 
@@ -45,13 +45,13 @@ Every category above is a real consumer product on the LarryTrustee.AI platform,
 
 In addition to the standard Cosmos SDK modules (`auth`, `bank`, `staking`, `gov`, `distribution`, `slashing`, `mint`, `crisis`, `evidence`, `feegrant`, `ibc`, `ica`, `transfer`):
 
-- **`x/ltrstchain`** — Privacy module: shielded-transfer commitments, nullifier set, rolling Merkle root. Lets AI tools store legal/medical/legacy commitments without revealing payloads to validators. See [`x/ltrstchain/PRIVACY_MODULE.md`](x/ltrstchain/PRIVACY_MODULE.md).
+- **`x/ltrstchain`** — Privacy module: shielded-transfer commitments, nullifier set, rolling Merkle root. Lets AI-generated tools store legal/financial/medical commitments without revealing payloads to validators. See [`x/ltrstchain/PRIVACY_MODULE.md`](x/ltrstchain/PRIVACY_MODULE.md).
 - **`x/ltrstdex`** — Spot CLOB module (Phase 1 design): on-chain central limit orderbook with deterministic price-time priority matching. See [`x/ltrstdex/DESIGN.md`](x/ltrstdex/DESIGN.md).
 - **`x/bridge`** — IBC asset registry: governance-gated registration of bridged assets entering the chain through IBC channels.
 
 ## Status
 
-LTRST Chain is in **Phase 1**. Mainnet is live and producing blocks. The DEX (`dex.larrytrustee.ai`) is in bootstrap mode with issuer-operated market-maker liquidity. A formal public token sale is scheduled to follow CoinMarketCap and CoinGecko listings; until then the chain is a builder and developer environment.
+LTRST Chain is in **Phase 1**. Mainnet is live and producing blocks. The DEX (`dex.larrytrustee.ai`) is in bootstrap mode with issuer-operated market-maker liquidity. A formal public token sale is scheduled to follow CoinMarketCap and CoinGecko listings; until then the chain is a builder and developer environment for legal, financial, and medical AI-generated projects and tools.
 
 ## Build from Source
 
@@ -99,7 +99,7 @@ The whitepaper allocation, enforced in `config.yml`:
 
 ## Roadmap
 
-- **Phase 1 (live)** — privacy commitments, sovereign chain, single-validator bootstrap, AI-tool integration.
+- **Phase 1 (live)** — privacy commitments, sovereign chain, single-validator bootstrap, AI-tool integration for legal, financial, and medical workloads.
 - **Phase 2 (active)** — multi-validator decentralization, DEX (`x/ltrstdex`) Phase 1 spot CLOB, third-party exchange listings, formal public token sale.
 - **Phase 3 (Q4 2026, design only)** — Ethermint EVM-compatibility layer behind a governance-gated upgrade. See [`docs/ETHERMINT_INTEGRATION_PLAN.md`](docs/ETHERMINT_INTEGRATION_PLAN.md).
 
