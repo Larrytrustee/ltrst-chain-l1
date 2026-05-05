@@ -1,0 +1,40 @@
+syntax = "proto3";
+package ltrstchain.ltrstdex;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "ltrstchain/ltrstdex/params.proto";
+import "ltrstchain/ltrstdex/spot.proto";
+
+option go_package = "ltrstchain/x/ltrstdex/types";
+
+// GenesisState defines the ltrstdex module's genesis state.
+message GenesisState {
+  // params holds all module parameters.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // markets is the full set of spot markets at genesis.
+  repeated SpotMarket markets = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // orders is the full set of live SpotOrders at genesis. Re-inserted
+  // into the orderbook index during InitGenesis in price-time order.
+  repeated SpotOrder orders = 3 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // next_market_id is the id to be assigned to the next market
+  // created after genesis.
+  uint64 next_market_id = 4;
+
+  // next_order_seq_by_market is the per-market monotonic sequence
+  // used as time-priority tie-breaker. Key is marketID; value is the
+  // next seq to assign.
+  map<uint64, uint64> next_order_seq_by_market = 5;
+}

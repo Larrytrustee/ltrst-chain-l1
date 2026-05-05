@@ -1,0 +1,25 @@
+syntax = "proto3";
+package ltrstchain.bridge;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "ltrstchain/x/bridge/types";
+
+// Params are the module parameters. Phase 2 keeps the set tiny — the
+// parameter surface can grow when we add relayer attestations or
+// per-asset rate limits.
+message Params {
+  option (amino.name) = "ltrstchain/x/bridge/Params";
+  option (gogoproto.equal) = true;
+
+  // require_governance_registration, when true, restricts
+  // MsgRegisterBridgeAsset and MsgUpdateBridgeAsset to the module
+  // authority (typically x/gov). When false any signer may register
+  // a new asset — useful for devnets, not for mainnet.
+  bool require_governance_registration = 1;
+
+  // max_assets caps total registered entries to prevent spam. 0 means
+  // unlimited.
+  uint32 max_assets = 2;
+}

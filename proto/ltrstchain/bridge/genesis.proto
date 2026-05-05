@@ -1,0 +1,17 @@
+syntax = "proto3";
+package ltrstchain.bridge;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "ltrstchain/bridge/bridge.proto";
+import "ltrstchain/bridge/params.proto";
+
+option go_package = "ltrstchain/x/bridge/types";
+
+// GenesisState is the full module state at genesis. At genesis we
+// allow the chain to come up with a pre-populated asset list so
+// mainnet can launch with the canonical USDC paths already blessed.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated BridgeAsset assets = 2 [(gogoproto.nullable) = false];
+}

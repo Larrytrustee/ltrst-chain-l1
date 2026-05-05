@@ -1,0 +1,189 @@
+syntax = "proto3";
+package ltrstchain.ltrstdex;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "ltrstchain/ltrstdex/params.proto";
+import "ltrstchain/ltrstdex/spot.proto";
+
+option go_package = "ltrstchain/x/ltrstdex/types";
+
+// Query defines the gRPC querier service for x/ltrstdex.
+service Query {
+  // Params queries the module parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/params";
+  }
+
+  // SpotMarket returns a single market by id.
+  rpc SpotMarket(QuerySpotMarketRequest) returns (QuerySpotMarketResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets/{market_id}";
+  }
+
+  // SpotMarketByTicker returns a single market by ticker (e.g. "LTRST/USDC").
+  rpc SpotMarketByTicker(QuerySpotMarketByTickerRequest) returns (QuerySpotMarketResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets/by_ticker/{ticker}";
+  }
+
+  // SpotMarkets returns the list of all markets (paginated).
+  rpc SpotMarkets(QuerySpotMarketsRequest) returns (QuerySpotMarketsResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets";
+  }
+
+  // SpotOrder returns a single order by id.
+  rpc SpotOrder(QuerySpotOrderRequest) returns (QuerySpotOrderResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets/{market_id}/orders/{order_id}";
+  }
+
+  // SpotOrdersByOwner returns all live orders owned by address.
+  rpc SpotOrdersByOwner(QuerySpotOrdersByOwnerRequest) returns (QuerySpotOrdersByOwnerResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/owners/{owner}/orders";
+  }
+
+  // SpotOrdersByMarket returns all live orders on a market.
+  rpc SpotOrdersByMarket(QuerySpotOrdersByMarketRequest) returns (QuerySpotOrdersByMarketResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets/{market_id}/orders";
+  }
+
+  // SpotOrderbook returns an aggregated depth snapshot for a market.
+  rpc SpotOrderbook(QuerySpotOrderbookRequest) returns (QuerySpotOrderbookResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets/{market_id}/orderbook";
+  }
+
+  // SpotFills returns fill history for a market.
+  rpc SpotFills(QuerySpotFillsRequest) returns (QuerySpotFillsResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstdex/markets/{market_id}/fills";
+  }
+}
+
+// ---------------------------------------------------------------------
+// Params
+// ---------------------------------------------------------------------
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// ---------------------------------------------------------------------
+// Markets
+// ---------------------------------------------------------------------
+
+message QuerySpotMarketRequest {
+  uint64 market_id = 1;
+}
+
+message QuerySpotMarketByTickerRequest {
+  string ticker = 1;
+}
+
+message QuerySpotMarketResponse {
+  SpotMarket market = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QuerySpotMarketsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QuerySpotMarketsResponse {
+  repeated SpotMarket markets = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// ---------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------
+
+message QuerySpotOrderRequest {
+  uint64 market_id = 1;
+  string order_id = 2;
+}
+
+message QuerySpotOrderResponse {
+  SpotOrder order = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QuerySpotOrdersByOwnerRequest {
+  string owner = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message QuerySpotOrdersByOwnerResponse {
+  repeated SpotOrder orders = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QuerySpotOrdersByMarketRequest {
+  uint64 market_id = 1;
+  // side_filter optionally narrows the result. SIDE_UNSPECIFIED = both sides.
+  Side side_filter = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+message QuerySpotOrdersByMarketResponse {
+  repeated SpotOrder orders = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// ---------------------------------------------------------------------
+// Orderbook depth snapshot
+// ---------------------------------------------------------------------
+
+message QuerySpotOrderbookRequest {
+  uint64 market_id = 1;
+  // depth caps the number of price levels per side returned. 0 = 50.
+  uint32 depth = 2;
+}
+
+message QuerySpotOrderbookResponse {
+  repeated OrderbookLevel bids = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated OrderbookLevel asks = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// ---------------------------------------------------------------------
+// Fills history
+// ---------------------------------------------------------------------
+
+message QuerySpotFillsRequest {
+  uint64 market_id = 1;
+  // min_block_height optionally filters to fills ≥ this height.
+  int64 min_block_height = 2;
+  // max_block_height optionally filters to fills ≤ this height. 0 = no cap.
+  int64 max_block_height = 3;
+  cosmos.base.query.v1beta1.PageRequest pagination = 4;
+}
+
+message QuerySpotFillsResponse {
+  repeated SpotFill fills = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

@@ -1,0 +1,59 @@
+syntax = "proto3";
+package ltrstchain.bridge;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "ltrstchain/bridge/bridge.proto";
+import "ltrstchain/bridge/params.proto";
+
+option go_package = "ltrstchain/x/bridge/types";
+
+// Query defines the gRPC surface for x/bridge. All methods are read-
+// only; mutating operations are in tx.proto.
+service Query {
+  // Params returns the module parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/ltrstchain/bridge/params";
+  }
+
+  // BridgeAsset fetches a single asset by its ibc_denom. 404 if not
+  // registered.
+  rpc BridgeAsset(QueryBridgeAssetRequest) returns (QueryBridgeAssetResponse) {
+    option (google.api.http).get = "/ltrstchain/bridge/assets/{ibc_denom}";
+  }
+
+  // BridgeAssets lists all registered assets, paginated.
+  rpc BridgeAssets(QueryBridgeAssetsRequest) returns (QueryBridgeAssetsResponse) {
+    option (google.api.http).get = "/ltrstchain/bridge/assets";
+  }
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBridgeAssetRequest {
+  string ibc_denom = 1;
+}
+
+message QueryBridgeAssetResponse {
+  BridgeAsset asset = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBridgeAssetsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  // Optional filter by BridgeSource. Pass
+  // BRIDGE_SOURCE_UNSPECIFIED to mean "any".
+  BridgeSource source_filter = 2;
+  // Optional filter to only return verified assets.
+  bool verified_only = 3;
+}
+
+message QueryBridgeAssetsResponse {
+  repeated BridgeAsset assets = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

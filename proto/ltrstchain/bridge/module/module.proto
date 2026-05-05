@@ -1,0 +1,16 @@
+syntax = "proto3";
+package ltrstchain.bridge.module;
+
+import "cosmos/app/v1alpha1/module.proto";
+
+// Module is the depinject config object for x/bridge.
+message Module {
+  option (cosmos.app.v1alpha1.module) = {
+    go_import: "ltrstchain/x/bridge"
+  };
+
+  // authority is the bech32 address allowed to register, update, and
+  // remove bridge assets, plus update params. If empty, defaults to
+  // the x/gov module account.
+  string authority = 1;
+}

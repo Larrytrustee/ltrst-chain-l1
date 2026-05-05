@@ -1,0 +1,58 @@
+# ════════════════════════════════════════════════════════════════
+# .gitignore — hardened 2026-04-16 before baseline DEX-fork commit
+# Previous version ignored only editor/build-output noise; this
+# version also excludes anything containing secrets or chain state.
+# ════════════════════════════════════════════════════════════════
+
+# ── Secrets (CRITICAL — do not remove) ──────────────────────────
+# Validator consensus key, P2P node key, keyring, chain state.
+SECRETS/
+SERVER-BACKUP-*/
+**/priv_validator_key.json
+**/priv_validator_state.json
+**/node_key.json
+**/keyring-test/
+**/keyring-file/
+**/keys_list.json
+*.mnemonic
+*.pem
+*.key
+# Fork/deploy docs with server IPs, tunnel IDs, SSH paths
+FORK-CREDENTIALS*.md
+SERVER-*.md
+
+# ── Build artifacts ─────────────────────────────────────────────
+build/
+release/
+dist/
+/ltrstchaind
+/ltrstchain
+*.test
+
+# ── Chain data dirs when produced in-tree ───────────────────────
+**/data/application.db/
+**/data/blockstore.db/
+**/data/cs.wal/
+**/data/evidence.db/
+**/data/state.db/
+**/data/tx_index.db/
+
+# ── macOS metadata noise ────────────────────────────────────────
+._*
+.DS_Store
+
+# ── Editor / IDE ────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Node/Vue (from ignite template) ─────────────────────────────
+vue/node_modules/
+vue/dist/
+node_modules/
+
+# ── Logs / misc ─────────────────────────────────────────────────
+*.log
+*.dot
+*.ign

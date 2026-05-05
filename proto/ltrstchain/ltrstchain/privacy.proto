@@ -1,0 +1,229 @@
+syntax = "proto3";
+package ltrstchain.ltrstchain;
+
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "ltrstchain/x/ltrstchain/types";
+
+// NOTE: this file is the PROTO SOURCE for the chain-side privacy module. The
+// keeper layer (AddCommitment, IsNullifierUsed, GetCommitment, GetMerkleRoot)
+// is already implemented in x/ltrstchain/keeper/privacy.go and compiled into
+// ltrstchaind. To wire Msg + Query RPCs, run:
+//
+//   make proto-deps   # one-time: installs buf, protoc-gen-gogo, etc.
+//   make proto-gen    # regenerates x/ltrstchain/types/*.pb.go
+//
+// Then implement MsgShieldedTransfer handler + query handlers in
+// x/ltrstchain/keeper/msg_shielded_transfer.go and x/ltrstchain/keeper/
+// query_privacy.go, delegating to the existing keeper methods.
+
+// MsgPrivacy defines the Msg service extension for the privacy module.
+//
+// Kept in its own service to make regeneration order-independent: the existing
+// Msg service in tx.proto continues to own MsgUpdateParams; this service
+// adds MsgShieldedTransfer without touching tx.proto.
+service MsgPrivacy {
+  option (cosmos.msg.v1.service) = true;
+
+  // ShieldedTransfer records a shielded commitment on-chain. The sender
+  // submits the commitment bytes, the nullifier, optional field commitments,
+  // and optional field openings. The module rejects any transaction whose
+  // nullifier has already been observed (double-spend prevention) and any
+  // opening whose (value, salt) does not hash to its declared field commitment.
+  rpc ShieldedTransfer(MsgShieldedTransfer) returns (MsgShieldedTransferResponse);
+
+  // ShieldedDeposit records a shielded commitment AND atomically escrows the
+  // supplied coins from the depositor into the shielded-pool module account.
+  // Rejects on double-spend (nullifier already seen), invalid opening, or
+  // insufficient balance. The deposit amount becomes part of the shielded
+  // pool's TVL and can only be released via ShieldedWithdraw.
+  rpc ShieldedDeposit(MsgShieldedDeposit) returns (MsgShieldedDepositResponse);
+
+  // ShieldedWithdraw releases coins from the shielded-pool module account to
+  // the specified recipient. INTERIM MODE: the tx signer must be the module
+  // authority (governance) and supply a previously-unused nullifier. Once
+  // zk-SNARK verification lands on-chain, the authority check is replaced
+  // with proof-of-knowledge of a commitment opening.
+  rpc ShieldedWithdraw(MsgShieldedWithdraw) returns (MsgShieldedWithdrawResponse);
+}
+
+// QueryPrivacy defines the gRPC querier extension for the privacy module.
+service QueryPrivacy {
+  // Commitment returns a stored commitment by its 32-byte commit bytes.
+  rpc Commitment(QueryCommitmentRequest) returns (QueryCommitmentResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstchain/privacy/commitment/{commit}";
+  }
+
+  // NullifierUsed returns whether a given nullifier has already been spent.
+  rpc NullifierUsed(QueryNullifierUsedRequest) returns (QueryNullifierUsedResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstchain/privacy/nullifier/{nullifier}";
+  }
+
+  // MerkleRoot returns the current rolling Merkle accumulator root.
+  rpc MerkleRoot(QueryMerkleRootRequest) returns (QueryMerkleRootResponse) {
+    option (google.api.http).get = "/ltrstchain/ltrstchain/privacy/merkle_root";
+  }
+}
+
+// FieldOpening is the (value, salt) pair a sender may voluntarily disclose for
+// a named field (e.g. "amount", "sender", "receiver"). The module recomputes
+// SHA-256(value || salt) and rejects any opening whose hash does not equal
+// its declared field commitment.
+message FieldOpening {
+  bytes value = 1;
+  bytes salt  = 2;
+}
+
+// ShieldedCommitment is the protobuf shape of the in-memory
+// types.Commitment. The 32-byte commit and nullifier are the SHA-256 outputs
+// produced by the LT Shield Wallet's generateCommitment() function
+// (LT-Shield-Commit-v2).
+message ShieldedCommitment {
+  // commit is the 32-byte SHA-256 commitment.
+  bytes commit = 1;
+
+  // nullifier is the 32-byte SHA-256 nullifier. At most one commitment in the
+  // chain's lifetime may carry any given nullifier value.
+  bytes nullifier = 2;
+
+  // field_commitments maps a field name to its 32-byte SHA-256 commitment.
+  map<string, bytes> field_commitments = 3;
+
+  // field_openings maps a field name to the (value, salt) pair the sender is
+  // voluntarily disclosing.
+  map<string, FieldOpening> field_openings = 4;
+
+  // protocol must equal "LT-Shield-Commit-v2". Any other value is rejected.
+  string protocol = 5;
+
+  // submitter is the bech32 address that submitted the commitment. The
+  // commitment itself hides the true sender unless explicitly disclosed via
+  // field_openings.
+  string submitter = 6;
+
+  // height is the block height at which the commitment was accepted. Set by
+  // the keeper at ingress; client-supplied values are ignored.
+  int64 height = 7;
+}
+
+// MsgShieldedTransfer is the transaction type used to record a shielded
+// commitment on-chain.
+message MsgShieldedTransfer {
+  option (cosmos.msg.v1.signer) = "submitter";
+  option (amino.name) = "ltrstchain/MsgShieldedTransfer";
+
+  string submitter = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  ShieldedCommitment commitment = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgShieldedTransferResponse is returned on success. The chain echoes back
+// the updated rolling Merkle accumulator root so the wallet can confirm the
+// commitment landed without waiting for an indexer round-trip.
+message MsgShieldedTransferResponse {
+  bytes new_merkle_root = 1;
+  int64 height          = 2;
+}
+
+// MsgShieldedDeposit escrows funds into the shielded-pool module account,
+// atomically recording a commitment that can later be spent via a shielded
+// withdraw. The tx signer is the depositor and must have the amount spendable.
+message MsgShieldedDeposit {
+  option (cosmos.msg.v1.signer) = "depositor";
+  option (amino.name) = "ltrstchain/MsgShieldedDeposit";
+
+  string depositor = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  ShieldedCommitment commitment = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// MsgShieldedDepositResponse echoes back the updated rolling Merkle accumulator
+// root and the shielded-pool's post-deposit balance.
+message MsgShieldedDepositResponse {
+  bytes new_merkle_root = 1;
+  int64 height          = 2;
+  repeated cosmos.base.v1beta1.Coin pool_balance = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// MsgShieldedWithdraw releases coins from the shielded pool to `recipient`.
+// Interim security model: authority-gated (governance-only). The authority
+// field MUST equal the module's configured authority bech32 address, and the
+// tx must be signed by that authority. A subsequent upgrade will replace the
+// authority check with on-chain zk-SNARK proof verification.
+message MsgShieldedWithdraw {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "ltrstchain/MsgShieldedWithdraw";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string recipient = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  repeated cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  // nullifier is the 32-byte SHA-256 nullifier of the commitment being spent.
+  // Marked used atomically with the bank send; cannot be reused.
+  bytes nullifier = 4;
+}
+
+// MsgShieldedWithdrawResponse returns the post-withdraw pool balance.
+message MsgShieldedWithdrawResponse {
+  int64 height = 1;
+  repeated cosmos.base.v1beta1.Coin pool_balance = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// QueryCommitmentRequest looks up a commitment by its 32-byte commit bytes.
+// The commit parameter is hex-encoded on the wire.
+message QueryCommitmentRequest {
+  string commit = 1;
+}
+
+// QueryCommitmentResponse returns the stored commitment, or an empty response
+// when no commitment with that commit value has been observed.
+message QueryCommitmentResponse {
+  ShieldedCommitment commitment = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  bool found  = 2;
+  int64 height = 3;
+}
+
+// QueryNullifierUsedRequest checks whether a given nullifier has already been
+// recorded in a prior accepted commitment. The nullifier parameter is
+// hex-encoded on the wire.
+message QueryNullifierUsedRequest {
+  string nullifier = 1;
+}
+
+// QueryNullifierUsedResponse returns true when the nullifier is spent.
+message QueryNullifierUsedResponse {
+  bool used = 1;
+}
+
+// QueryMerkleRootRequest has no parameters — the module stores a single
+// rolling accumulator root.
+message QueryMerkleRootRequest {}
+
+// QueryMerkleRootResponse returns the 32-byte rolling Merkle accumulator root.
+message QueryMerkleRootResponse {
+  bytes root = 1;
+}

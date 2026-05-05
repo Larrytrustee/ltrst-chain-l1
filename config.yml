@@ -1,0 +1,140 @@
+version: 1
+validation: sovereign
+build:
+  name: ltrstchaind
+  main: ./cmd/ltrstchaind
+
+# LTRST Chain — Layer 1, own sovereign chain
+# Native denom: ultrst (1 LTRST = 1,000,000 ultrst, 6 decimals)
+# Max Supply: 221,000,000 LTRST = 221,000,000,000,000 ultrst
+
+accounts:
+  # Allocation per whitepaper
+  - name: public_sale            # 15% — 33,150,000 LTRST
+    coins:
+      - 33150000000000ultrst
+  - name: staking_rewards        # 25% — 55,250,000 LTRST
+    coins:
+      - 55250000000000ultrst
+  - name: ecosystem_dev          # 20% — 44,200,000 LTRST
+    coins:
+      - 44200000000000ultrst
+  - name: community_rewards      # 15% — 33,150,000 LTRST
+    coins:
+      - 33150000000000ultrst
+  - name: reserve_founders       # 10% — 22,100,000 LTRST
+    coins:
+      - 22100000000000ultrst
+  - name: dao_treasury           # 5%  — 11,050,000 LTRST
+    coins:
+      - 11050000000000ultrst
+  - name: liquidity_pool         # 10% — 22,100,000 LTRST
+    coins:
+      - 22100000000000ultrst
+  # Genesis validator — takes 500K LTRST from ecosystem to bootstrap consensus
+  - name: validator1
+    coins:
+      - 500000000000ultrst
+
+validators:
+  - name: validator1
+    bonded: 100000000000ultrst   # 100,000 LTRST bonded (10x min stake)
+
+client:
+  openapi:
+    path: docs/static/openapi.yml
+
+genesis:
+  chain_id: ltrst-chain-1
+  app_state:
+    staking:
+      params:
+        bond_denom: ultrst
+        unbonding_time: "1209600s"        # 14 days
+        max_validators: 100
+        min_commission_rate: "0.050000000000000000"
+    mint:
+      params:
+        mint_denom: ultrst
+        inflation_rate_change: "0.000000000000000000"
+        inflation_max: "0.000000000000000000"
+        inflation_min: "0.000000000000000000"
+        goal_bonded: "0.670000000000000000"
+        blocks_per_year: "15768000"       # 2-sec blocks × 60 × 60 × 24 × 365 / 2
+    gov:
+      params:
+        min_deposit:
+          - denom: ultrst
+            amount: "10000000000"          # 10,000 LTRST to propose
+        max_deposit_period: "172800s"     # 48 hours
+        voting_period: "172800s"          # 48 hours
+        quorum: "0.100000000000000000"    # 10%
+        threshold: "0.500000000000000000" # 50%
+        veto_threshold: "0.334000000000000000"
+    crisis:
+      constant_fee:
+        denom: ultrst
+        amount: "10000000000"              # 10,000 LTRST
+    distribution:
+      params:
+        community_tax: "0.020000000000000000"
+        base_proposer_reward: "0.010000000000000000"
+        bonus_proposer_reward: "0.040000000000000000"
+        withdraw_addr_enabled: true
+    bank:
+      denom_metadata:
+        - base: ultrst
+          display: LTRST
+          name: LTRST
+          symbol: LTRST
+          description: "LTRST Chain native token — legal privacy blockchain"
+          denom_units:
+            - denom: ultrst
+              exponent: 0
+              aliases: ["microltrst"]
+            - denom: mltrst
+              exponent: 3
+              aliases: ["milliltrst"]
+            - denom: LTRST
+              exponent: 6
+              aliases: []
+  consensus:
+    params:
+      block:
+        max_bytes: "22020096"
+        max_gas: "-1"
+      evidence:
+        max_age_num_blocks: "100000"
+        max_age_duration: "172800000000000"
+        max_bytes: "1048576"
+      validator:
+        pub_key_types: ["ed25519"]
+
+# Sequencer / block production config — 2-second block time
+init:
+  config:
+    consensus:
+      timeout_propose: "1s"
+      timeout_propose_delta: "500ms"
+      timeout_prevote: "500ms"
+      timeout_prevote_delta: "500ms"
+      timeout_precommit: "500ms"
+      timeout_precommit_delta: "500ms"
+      timeout_commit: "2s"               # 2-second blocks
+    rpc:
+      laddr: "tcp://0.0.0.0:26657"
+    p2p:
+      laddr: "tcp://0.0.0.0:26656"
+      seeds: ""
+      persistent_peers: ""
+    instrumentation:
+      prometheus: true
+      prometheus_listen_addr: ":26660"
+
+faucet:
+  name: validator1
+  coins:
+    - 100000000ultrst                    # 100 LTRST per request
+  coins_max:
+    - 1000000000ultrst                   # 1,000 LTRST max per address
+  host: "0.0.0.0:4500"

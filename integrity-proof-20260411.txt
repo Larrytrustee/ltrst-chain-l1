@@ -1,0 +1,31 @@
+========================================================================
+ LTRST Chain L1 — Genesis integrity check (LIVE)
+========================================================================
+
+  Audited at block 3223 (2026-04-12T00:04:48.028425789Z)
+
+  public_sale        ltrst1au3ds5r6w76h048gxwazg5g9dwx969f50zvy6n    33,150,000 LTRST   OK
+  staking_rewards    ltrst1urhhg9pvdfdqre382fze7pstw0u7x3jl7dwgfu    55,250,000 LTRST   OK
+  ecosystem_dev      ltrst1rpl6slycf703mzlmlnhgexyquydk304gwxjce2    43,700,000 LTRST   OK
+  community_rewards  ltrst1ehkee9ms650tznqvgzyk6kyj8skncq5l9tp37y    33,150,000 LTRST   OK
+  reserve_founders   ltrst1pqhj9vxqe0n40m37eqztexrdu6j0xwv4ura3x5    22,100,000 LTRST   OK
+  dao_treasury       ltrst1k3cgyfph4aju2qed9znwetvkerc6gzrvq5c8sm    11,050,000 LTRST   OK
+  liquidity_pool     ltrst1cx4yh9y0du74zfxufvev82flcqtf93wnkgv8dd    22,100,000 LTRST   OK
+  validator1         ltrst14jypsver3ndf8rufwf34yrkdr2h5pa8ghchl6g       500,000 LTRST   OK
+
+  Sum of 8 genesis accounts:  221,000,000 LTRST   (cap 221,000,000)
+  Cap match:                 True
+
+  Active validators: 1
+    - LTRST Mainnet Validator 01: 100,000 LTRST staked, status BOND_STATUS_BONDED
+
+  On-chain supply: 221,000,000 LTRST (221,000,000,000,000 ultrst)
+  Matches cap:     True
+
+  Gov voting period: 172800s  (expect 172800s = 48h)
+  Gov min deposit:   10,000 LTRST  (expect 10,000)
+  Inflation:         0.000000000000000000  (expect 0 — fixed supply)
+
+========================================================================
+ RESULT: ALL GENESIS CONSTRAINTS MATCH WHITEPAPER SPEC
+========================================================================

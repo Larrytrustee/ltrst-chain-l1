@@ -1,0 +1,97 @@
+syntax = "proto3";
+package ltrstchain.bridge;
+
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "ltrstchain/bridge/bridge.proto";
+import "ltrstchain/bridge/params.proto";
+
+option go_package = "ltrstchain/x/bridge/types";
+
+// Msg defines the mutating surface for x/bridge. All three register/
+// update/remove messages default to gov-gated (see Params.require_
+// governance_registration); an operator-level relaxation is a
+// governance decision made per-environment.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // UpdateParams changes the module params. Authority-only.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // RegisterBridgeAsset adds a new asset entry. Authority-only by
+  // default (Params.require_governance_registration).
+  rpc RegisterBridgeAsset(MsgRegisterBridgeAsset) returns (MsgRegisterBridgeAssetResponse);
+
+  // UpdateBridgeAsset mutates display fields and/or verified flag.
+  // Authority-only.
+  rpc UpdateBridgeAsset(MsgUpdateBridgeAsset) returns (MsgUpdateBridgeAssetResponse);
+
+  // RemoveBridgeAsset deletes an entry. Does not claw back any bank
+  // balances — x/bank tokens keep flowing. The entry removal only
+  // affects what UIs decide to surface. Authority-only.
+  rpc RemoveBridgeAsset(MsgRemoveBridgeAsset) returns (MsgRemoveBridgeAssetResponse);
+}
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "ltrstchain/x/bridge/MsgUpdateParams";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateParamsResponse {}
+
+message MsgRegisterBridgeAsset {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "ltrstchain/x/bridge/MsgRegisterBridgeAsset";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // asset holds every field of the new BridgeAsset record.
+  BridgeAsset asset = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgRegisterBridgeAssetResponse {}
+
+message MsgUpdateBridgeAsset {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "ltrstchain/x/bridge/MsgUpdateBridgeAsset";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // ibc_denom identifies the existing record.
+  string ibc_denom = 2;
+
+  // Fields that may be mutated. Leave empty to keep the existing
+  // value unchanged — the keeper treats empty strings as "no
+  // change".
+  string display_symbol = 3;
+  string display_name = 4;
+  uint32 decimals = 5;
+  bool set_decimals = 6;
+
+  BridgeSource source = 7;
+  bool set_source = 8;
+
+  string source_chain_id = 9;
+  string source_denom = 10;
+  string channel_id = 11;
+
+  bool verified = 12;
+  bool set_verified = 13;
+}
+
+message MsgUpdateBridgeAssetResponse {}
+
+message MsgRemoveBridgeAsset {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "ltrstchain/x/bridge/MsgRemoveBridgeAsset";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string ibc_denom = 2;
+}
+
+message MsgRemoveBridgeAssetResponse {}

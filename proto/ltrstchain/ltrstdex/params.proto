@@ -1,0 +1,27 @@
+syntax = "proto3";
+package ltrstchain.ltrstdex;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "ltrstchain/x/ltrstdex/types";
+
+// Params defines the parameters for x/ltrstdex.
+message Params {
+  option (amino.name) = "ltrstchain/x/ltrstdex/Params";
+  option (gogoproto.equal) = true;
+
+  // max_open_orders_per_account caps how many live (non-filled,
+  // non-cancelled) orders a single address may hold across all
+  // markets. Prevents state bloat from spammers without requiring a
+  // per-order escrow.
+  uint32 max_open_orders_per_account = 1;
+
+  // gov_only_market_creation toggles whether MsgCreateSpotMarket can
+  // be executed by non-gov authority. Phase 1 = true.
+  bool gov_only_market_creation = 2;
+
+  // fill_retention_blocks is how many blocks of SpotFill history we
+  // retain per market. 0 = keep all (unbounded).
+  uint32 fill_retention_blocks = 3;
+}

@@ -1,0 +1,77 @@
+syntax = "proto3";
+package ltrstchain.bridge;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "ltrstchain/x/bridge/types";
+
+// Source identifies which bridge brought an asset onto the chain. This
+// is informational / UI-facing. The trust assumptions are enforced by
+// governance when registering the entry.
+enum BridgeSource {
+  BRIDGE_SOURCE_UNSPECIFIED = 0;
+  // Noble issues native Circle USDC over IBC. Highest trust in the
+  // Cosmos ecosystem for USDC.
+  BRIDGE_SOURCE_NOBLE = 1;
+  // Axelar is a Cosmos chain whose General Message Passing wraps EVM
+  // (and other) assets into an IBC-transferable form.
+  BRIDGE_SOURCE_AXELAR = 2;
+  // Wormhole Gateway is a Cosmos chain that bridges non-Cosmos chains
+  // (Solana, Ethereum pre-native, Sui, etc.) into IBC form.
+  BRIDGE_SOURCE_WORMHOLE = 3;
+  // Any other IBC counterparty not specifically one of the above.
+  BRIDGE_SOURCE_IBC_OTHER = 4;
+}
+
+// BridgeAsset is the on-chain registry record for an IBC-bridged
+// asset. It ties the opaque ibc/<hash> denom users see in x/bank to
+// human-meaningful display metadata and an origin attestation.
+message BridgeAsset {
+  option (gogoproto.equal) = true;
+
+  // ibc_denom is the canonical bank denomination, e.g.
+  // "ibc/498A0751C7A53C569BE0F84EE4E6FA3B9D6C3B2FBEDFBF37EA0F67F8E56BDBC".
+  // It is the hash-derived denom that x/ibc-transfer writes into
+  // x/bank on receipt.
+  string ibc_denom = 1;
+
+  // display_symbol is the short ticker used in UIs (e.g. "USDC").
+  string display_symbol = 2;
+
+  // display_name is the long name used in UIs (e.g. "USD Coin (Noble)").
+  string display_name = 3;
+
+  // decimals is the number of decimal places the source chain uses.
+  // Most stablecoins use 6; ETH uses 18.
+  uint32 decimals = 4;
+
+  // source identifies the bridge category (see BridgeSource).
+  BridgeSource source = 5;
+
+  // source_chain_id is the IBC counterparty chain id that originated
+  // this asset (e.g. "noble-1", "axelar-dojo-1", "gateway-1").
+  string source_chain_id = 6;
+
+  // source_denom is the denom on the source chain, before any wrapping
+  // (e.g. "uusdc" on Noble, "uusdc" on Axelar after conversion from
+  // ERC-20, "solana-usdc" on Wormhole Gateway).
+  string source_denom = 7;
+
+  // channel_id is the ICS-04 channel id on THIS chain that the asset
+  // arrives through (e.g. "channel-0"). Packets via any other channel
+  // that hash to the same ibc_denom are still honoured by x/bank, but
+  // the registry canonicalises one blessed path.
+  string channel_id = 8;
+
+  // verified flags assets that have passed governance-level scrutiny.
+  // UIs are encouraged to hide unverified assets by default.
+  bool verified = 9;
+
+  // registered_height records the chain height at which this record
+  // was first written. Useful for auditing registry drift.
+  int64 registered_height = 10;
+
+  // updated_height records the height of the last mutation.
+  int64 updated_height = 11;
+}

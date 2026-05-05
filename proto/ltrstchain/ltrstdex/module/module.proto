@@ -1,0 +1,16 @@
+syntax = "proto3";
+package ltrstchain.ltrstdex.module;
+
+import "cosmos/app/v1alpha1/module.proto";
+
+// Module is the depinject config object for x/ltrstdex.
+message Module {
+  option (cosmos.app.v1alpha1.module) = {
+    go_import: "ltrstchain/x/ltrstdex"
+  };
+
+  // authority is the bech32 address allowed to create or pause
+  // markets and update module params. If empty it defaults to the
+  // x/gov module account.
+  string authority = 1;
+}

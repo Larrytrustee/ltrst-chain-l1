@@ -1,0 +1,28 @@
+syntax = "proto3";
+package ltrstchain.ltrstchain;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "ltrstchain/ltrstchain/params.proto";
+import "ltrstchain/ltrstchain/privacy.proto";
+
+option go_package = "ltrstchain/x/ltrstchain/types";
+
+// GenesisState defines the ltrstchain module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // privacy_commitments is the list of pre-existing shielded commitments to
+  // replay into the privacy keeper on chain genesis (e.g. on upgrade from a
+  // prior chain with a shielded pool already in use). Each entry's commit
+  // and nullifier are validated against CommitProtocol = "LT-Shield-Commit-v2"
+  // and duplicate nullifiers are rejected at init time. Omit for a fresh chain.
+  repeated ShieldedCommitment privacy_commitments = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
