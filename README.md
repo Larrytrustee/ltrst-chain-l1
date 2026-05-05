@@ -1,6 +1,6 @@
 # LTRST Chain — The AI Blockchain for Legal & Medical Tools
 
-LTRST Chain (`ltrst-chain-1`) is a sovereign Layer-1 blockchain purpose-built to host **AI-powered legal and medical tools** with cryptographic privacy guarantees at the protocol level. It is the source-of-truth ledger for the [LarryTrustee.AI](https://larrytrustee.ai) platform.
+LTRST Chain (`ltrst-chain-1`) is a sovereign Layer-1 blockchain purpose-built to host **legal and medical AI tools** with cryptographic privacy guarantees at the protocol level. It is the source-of-truth ledger for the [LarryTrustee.AI](https://larrytrustee.ai) platform.
 
 This repository contains the source code for the `ltrstchaind` validator binary.
 
@@ -10,8 +10,8 @@ General-purpose chains were not designed with AI workloads in mind. LTRST Chain 
 
 The chain is built so AI tools running on it can:
 
-- **AI legal tools** — generate, store, and execute living trusts, wills, beneficiary designations, and probate filings; AI-assisted contract drafting; document signing-likeness verification for deepfake-era authentication.
-- **AI medical tools** — HIPAA-aligned medical-record commitments; AI-guided care directives; cryptographically-anchored patient consent for AI-driven diagnosis or treatment recommendation; family medical history that survives the patient.
+- **legal AI tools** — generate, store, and execute living trusts, wills, beneficiary designations, and probate filings; AI-assisted contract drafting; document signing-likeness verification for deepfake-era authentication.
+- **medical AI tools** — HIPAA-aligned medical-record commitments; AI-guided care directives; cryptographically-anchored patient consent for AI-driven diagnosis or treatment recommendation; family medical history that survives the patient.
 - **Other AI-driven legacy tools** — family legacy video commitments, grantor signing-likeness video, and any other primary-source data that must outlive its creator under cryptographic guarantees.
 
 Every category above is a real consumer product on the LarryTrustee.AI platform, all anchored to this chain.
